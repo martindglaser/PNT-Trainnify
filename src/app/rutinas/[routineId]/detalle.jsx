@@ -2,42 +2,43 @@ import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Button, Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function DetalleProducto() {
+export default function DetalleRoutine() {
 
-    const { productId} = useLocalSearchParams()
-    const [producto, setProducto] = useState(null)
+    const { routineId } = useLocalSearchParams()
+    const [rutina, setRutina] = useState(null)
 
 
     useEffect(() => {
-      fetch(`https://fakestoreapi.com/products/${productId}`)
+      fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine/${routineId}`)
       .then( res => res.json())
       .then(data => {
-        setTimeout(() => {
-            setProducto(data)
-        }, 1000);
+        setRutina(data)
     })
       .catch(err => console.error(err))
     }, [])
 
-    if(!producto){
+    if(!rutina){
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={"red"} />
-                <Text style={{ marginTop: 10, fontSize: 26}}>Cargando Producto...</Text>
+                <Text style={{ marginTop: 10, fontSize: 26}}>Cargando Rutina...</Text>
             </View>
         )
     }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-       <Image
+       {/* <Image
         source={{uri: producto.image}}
         style={styles.image}
-       />
-       <Text style={styles.title}>{producto.title}</Text>
-       <Text style={styles.price}>{producto.price}</Text>
-       <Text style={styles.description}>{producto.description}</Text>
-        
+       /> */}
+       <Text style={styles.title}>{rutina.name}</Text>
+       <Text style={styles.description}>{rutina.description}</Text>
+        {
+            rutina.exercises.exercises.map((exercise, index) => (
+                <Text key={index}> | {exercise}, {rutina.exercises.series[index]}, {rutina.exercises.reps[index]}  | </Text>
+            ))
+        }
         <View style={styles.buttons}>
             <TouchableOpacity style={styles.cartButton} onPress={() => alert('Agregado al carrito')}>
                 <Text style={styles.cartText}> Agregar al Carrito</Text>

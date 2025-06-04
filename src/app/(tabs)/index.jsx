@@ -1,45 +1,49 @@
-import { Link } from 'expo-router'
-import React from 'react'
-import { Button, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Link, useRouter } from 'expo-router'
+import React, { useEffect } from 'react'
+import { Button, FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useAuth } from '../../context/authContext'
 
 export default function Home(){
-
+    const router = useRouter()
     const { isAuth, user } = useAuth()
+    const [DATA, setDATA] = React.useState([])
 
+   
+    useEffect(() => {
+        
+        console.log("test")
+        fetch('https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data fetched: ", data);
+            setDATA(data)
+        })
+      .catch(err => console.error(err))
 
-    const links = [
-        { href: '/ejemplos/scroll', label: 'Ir a ScrollUsers'},
-        { href: '/ejemplos/flatlist', label: 'Ir a FlatListUsers'},
-        { href: '/ejemplos/touchables', label: 'Ir a Touchables'},
-        { href: '/ejemplos/demo', label: 'Ir a Demo'},
-        { href: '/productos', label: 'Ir a Productos'},
-        { href: '/createProduct', label: 'Ir a Crear Productos'},
-        { href: '/maps', label: 'Ir a Maps'},
-
-    ]
+    },[])
 
     console.log("user: ", user);
-    
 
-    if(isAuth && user?.admin){
-        links.push({ href: '/add-sede', label: 'Agregar Sede'})
+
+    if(DATA.length === 0){
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Loading...</Text>
+            </View>
+        )
     }
 
 
   return (
+
     <View style={styles.container}>
         <Text style={styles.title}>🏠 Home Screen</Text>
-        {
-            links.map((link) => (
-                <Link key={link.href} href={link.href} asChild>
-                    <Pressable style={styles.button}>
-                        <Text style={styles.buttonText}>{link.label}</Text>
-                    </Pressable>
-                </Link>
-            ))
-        }
 
+        <FlatList
+            data={DATA}
+            renderItem={({item}) => <Button onPress={() => router.push(`../rutinas/${item.id}/detalle`)} title={item.name} />}
+            keyExtractor={item => item.id}
+        />
         
     </View>
   )
