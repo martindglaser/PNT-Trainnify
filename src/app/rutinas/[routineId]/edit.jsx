@@ -1,12 +1,16 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Button, Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import ListaDeChecks from '../../../components/ListaDeChecks';
 
 export default function DetalleRoutine() {
 
     const { routineId } = useLocalSearchParams()
     const [rutina, setRutina] = useState(null)
     const [ejercicios, setEjercicios] = useState([])
+    const [diasSeleccionados, setDiasSeleccionados] = useState([]);
+
+    const [nombre, setNombre] = useState('')
 
 
     useEffect(() => {
@@ -15,6 +19,7 @@ export default function DetalleRoutine() {
       .then(data => {
         setRutina(data)
         getEjercicios(data.exercises.exercisesIds);
+        setNombre(data.name)
     })
       .catch(err => console.error(err))
 
@@ -23,15 +28,26 @@ export default function DetalleRoutine() {
             fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise`)
             .then(res => res.json())
             .then(data => {
-                console.log('IDS '+ exercisesIds)
-                console.log('Ejercicios obtenidos: ', data);
                 const ejerciciosFiltrados = data.filter(ejercicio => exercisesIds.includes(Number(ejercicio.id)));
-                console.log('ejercicios Filtrados: '+ ejerciciosFiltrados);
                 setEjercicios(ejerciciosFiltrados)
             })
             .catch(err => console.error(err))
         }
     }, [])
+
+
+
+    function guardar() {
+        Alert.alert(
+            "Rutina Guardada",
+            "Tu rutina ha sido guardada correctamente.",
+            [
+                { text: "OK", onPress: () => console.log("Rutina guardada") }
+            ]
+        );
+    }
+
+
 
     if(!rutina){
         return (
@@ -44,27 +60,71 @@ export default function DetalleRoutine() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-       {/* <Image
-        source={{uri: producto.image}}
-        style={styles.image}
-       /> */}
-       <Text style={styles.title}>{rutina.name}</Text>
+      <ListaDeChecks onChangeSeleccion={setDiasSeleccionados} />
+        <Text style={styles.label}>Nombre:</Text>
+        <TextInput
+            style={styles.input}
+            placeholder="Nombre"
+            value={nombre}
+            onChangeText={setNombre}
+        />
        <Text style={styles.description}>{rutina.description}</Text>
         {
             ejercicios.map((exercise, index) => {
 
                 return(
                     <View key={index} style={{marginBottom: 20, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 8}}>
+                        
                         <Text style={{fontWeight: 'bold', fontSize: 18}}>{exercise.name}</Text>
-                        <Text>Series: {rutina.exercises.series[index]}</Text>
-                        <Text>Reps: {rutina.exercises.reps[index]}</Text>
+                        <Text style={styles.label}>Series:</Text>
+                        <TextInput
+                        keyboardType="numeric"
+                        style={styles.input}
+                        value={String(rutina.exercises.series[index])}
+                        onChangeText={(text) =>
+                            setRutina((prev) => {
+                            const nuevaSeries = [...prev.exercises.series];
+                            nuevaSeries[index] = parseInt(text) || 0;
+
+                            return {
+                                ...prev,
+                                exercises: {
+                                ...prev.exercises,
+                                series: nuevaSeries,
+                                },
+                            };
+                            })
+                        }
+                        />
+                        
+                        <Text style={styles.label}>Reps:</Text>
+
+                        <TextInput
+                        keyboardType="numeric"
+                        style={styles.input}
+                        value={String(rutina.exercises.reps[index])}
+                        onChangeText={(text) =>
+                            setRutina((prev) => {
+                            const nuevaReps = [...prev.exercises.reps];
+                            nuevaReps[index] = parseInt(text) || 0;
+
+                            return {
+                                ...prev,
+                                exercises: {
+                                ...prev.exercises,
+                                reps: nuevaReps,
+                                },
+                            };
+                            })
+                        }
+                        />  
                     </View>
                 );
         })
         }
         <View style={styles.buttons}>
-            <TouchableOpacity style={styles.cartButton} onPress={() => router.push(`/rutinas/${routineId}/edit`)}>
-                <Text style={styles.cartText}> Modificar </Text>
+            <TouchableOpacity style={styles.cartButton} onPress={() => guardar()}>
+                <Text style={styles.cartText}> Guardar </Text>
             </TouchableOpacity>
         </View>
     </ScrollView>
@@ -133,6 +193,25 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600'
-    }
+    },
+
+
+
+      label: {
+    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
   });
+
+
+  
   
