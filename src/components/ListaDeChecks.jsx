@@ -3,17 +3,22 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 const diasSemana = [
-  {id: 0, nombre: 'Domingo'},
-  {id: 1, nombre: 'Lunes',},
-  {id: 2, nombre: 'Martes',},
-  {id: 3, nombre: 'Miércoles',},
-  {id: 4, nombre: 'Jueves',},
-  {id: 5, nombre: 'Viernes',},
-  {id: 6, nombre: 'Sábado',},
+  { id: 0, nombre: 'Domingo' },
+  { id: 1, nombre: 'Lunes' },
+  { id: 2, nombre: 'Martes' },
+  { id: 3, nombre: 'Miércoles' },
+  { id: 4, nombre: 'Jueves' },
+  { id: 5, nombre: 'Viernes' },
+  { id: 6, nombre: 'Sábado' },
 ];
 
-const ListaDeChecks = ({ onChangeSeleccion }) => {
+const ListaDeChecks = ({ selectedDays = [], onChangeSeleccion }) => {
   const [diasSeleccionados, setDiasSeleccionados] = useState([]);
+
+  // Sincronizar con el estado externo
+  useEffect(() => {
+    setDiasSeleccionados(selectedDays);
+  }, [selectedDays]);
 
   const toggleDia = (dia) => {
     const nuevosSeleccionados = diasSeleccionados.includes(dia)
@@ -23,7 +28,7 @@ const ListaDeChecks = ({ onChangeSeleccion }) => {
     setDiasSeleccionados(nuevosSeleccionados);
   };
 
-  // Cuando cambia la selección, informamos al padre
+  // Informar al padre cuando cambia la selección
   useEffect(() => {
     if (onChangeSeleccion) {
       onChangeSeleccion(diasSeleccionados);
