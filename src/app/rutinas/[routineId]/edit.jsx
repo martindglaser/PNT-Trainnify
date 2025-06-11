@@ -118,10 +118,86 @@ export default function DetalleRoutine() {
                             })
                         }
                         />  
+                         
+                         {/* <Button
+                         onPress={()=>setRutina((prev)=>{
+                             return {
+                              ...prev,
+                              exercises:prev.exercises.
+                                 
+                             }
+                         })}
+                         title="eliminar"
+                         /> */}
+
+                         
+  <Button
+  title="Eliminar"
+  onPress={() => {
+    setRutina(prev => {
+      const updatedExercises = {
+        exercisesIds: prev.exercises.exercisesIds.filter((_, i) => i !== index),
+        series: prev.exercises.series.filter((_, i) => i !== index),
+        reps: prev.exercises.reps.filter((_, i) => i !== index),
+      };
+
+      return {
+        ...prev,
+        exercises: updatedExercises,
+      };
+    });
+
+    // También actualizá los ejercicios visibles:
+    setEjercicios(prev => prev.filter((_, i) => i !== index));
+  }}
+/>
+
+
+                         
                     </View>
                 );
-        })
+            })
         }
+        <Text style={styles.label}>Descanso entre reps:</Text>
+                        <TextInput
+                        keyboardType="numeric"
+                        style={styles.input}
+                        value={String(rutina.rest_bt_exercises)}
+                        onChangeText={(text) =>
+                            setRutina((prev) => {
+                            const nuevoDescansoReps = parseInt(text) || 0;
+
+                            return {
+                                ...prev,
+                                rest_bt_exercises:nuevoDescansoReps
+                            };
+                            })
+                        }
+                        />
+                        <Text>{rutina.rest_bt_exercises
+                            
+                            }</Text>
+
+                             <Text style={styles.label}>Descanso entre series:</Text>
+                        <TextInput
+                        keyboardType="numeric"
+                        style={styles.input}
+                        value={String(rutina.rest_bt_series)}
+                        onChangeText={(text) =>
+                            setRutina((prev) => {
+                            const nuevoDescansoSeries = parseInt(text) || 0;
+
+                            return {
+                                ...prev,
+                                rest_bt_series:nuevoDescansoSeries
+                            };
+                            })
+                        }
+                        />
+                        <Text>{rutina.rest_bt_series
+                            
+                            }</Text>
+
         <View style={styles.buttons}>
             <TouchableOpacity style={styles.cartButton} onPress={() => guardar()}>
                 <Text style={styles.cartText}> Guardar </Text>
