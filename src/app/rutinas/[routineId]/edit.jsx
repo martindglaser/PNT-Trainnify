@@ -27,6 +27,10 @@ export default function DetalleRoutine() {
       })
       .catch(err => console.error(err));
 
+  }, []);
+
+
+  
     const getEjercicios = async (exercisesIds) => {
       fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise`)
         .then(res => res.json())
@@ -36,7 +40,7 @@ export default function DetalleRoutine() {
         })
         .catch(err => console.error(err));
     };
-  }, []);
+
 
   function guardar() {
     fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine/${rutina.id}`, {

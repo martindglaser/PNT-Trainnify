@@ -42,7 +42,7 @@ export default function Home(){
         <FlatList
             data={DATA}
             renderItem={({item}) => <Button onPress={() => router.push(`../rutinas/${item.id}/detalle`)} title={item.name} />}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.id.toString()}
         />
         
     </View>

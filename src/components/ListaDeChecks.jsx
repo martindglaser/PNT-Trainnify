@@ -14,6 +14,7 @@ const diasSemana = [
 
 const ListaDeChecks = ({ selectedDays = [], onChangeSeleccion }) => {
   const [diasSeleccionados, setDiasSeleccionados] = useState([]);
+  const [primerRender, setPrimerRender] = useState(true);
 
   // Sincronizar con el estado externo
   useEffect(() => {
@@ -29,11 +30,13 @@ const ListaDeChecks = ({ selectedDays = [], onChangeSeleccion }) => {
   };
 
   // Informar al padre cuando cambia la selección
-  useEffect(() => {
-    if (onChangeSeleccion) {
-      onChangeSeleccion(diasSeleccionados);
-    }
-  }, [diasSeleccionados]);
+useEffect(() => {
+  if (!primerRender && onChangeSeleccion) {
+    onChangeSeleccion(diasSeleccionados);
+  } else {
+    setPrimerRender(false);
+  }
+}, [diasSeleccionados]);
 
   return (
     <View style={styles.container}>
