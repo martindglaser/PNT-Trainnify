@@ -14,9 +14,9 @@ export default function LoginScreen() {
 
     const handleSubmit = () => {
         if(esLogin){
-            login(usuario, password)
+            login({usuario, password})
         }else{
-            register(usuario, email, password)
+            register({usuario, email, password})
         }
     }
 

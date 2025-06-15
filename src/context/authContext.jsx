@@ -64,14 +64,15 @@ export const AuthProvider = ({children}) => {
 
 
 
-    const login = async (usuario, password) => {
+    const login = async ({usuario, password}) => {
         try {
             console.log('Iniciando Login');
             
-            const response = await fetch('https://6823c65165ba05803397d99f.mockapi.io/users');
+            const response = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios');
             const data = await response.json()
             console.log('Data: ', data);
 
+            console.log(`credenciasles: ${usuario} - ${password}`);
             const user = data.find(u => u.username === usuario && u.password === password);
             console.log("Usuario?: ", user);
             
@@ -95,9 +96,9 @@ export const AuthProvider = ({children}) => {
 
     const register = async ({usuario, email, password}) => {
         try {
-            const response = await fetch('https://6823c65165ba05803397d99f.mockapi.io/users');
+            const response = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios');
             const data = await response.json()
-            
+            console.log(`usuario: ${usuario}`)
             const userExist = data.some( u => u.usuario === usuario);
             const emailExist = data.some( u => u.email === email);
       
@@ -113,17 +114,19 @@ export const AuthProvider = ({children}) => {
             email:email,
             username:usuario,
             password:password,
-            avatar:""
+            avatar:"",
+            name:""
         })
 
+        console.log(body)
 
-        const respuesta = await fetch('https://6823c65165ba05803397d99f.mockapi.io/users',{
+        const respuesta = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios',{
             method: 'POST',
             headers:{
                 'Content-Type':'application/json',
-                body: body
-            }}
-        )
+            },
+            body: body
+        })
 
         if(respuesta.ok){
             alert('Registro Exitoso')
