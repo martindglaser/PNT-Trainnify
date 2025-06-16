@@ -1,152 +1,175 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
 
+const AuthContext = createContext();
 
-const AuthContext = createContext()
+export const useAuth = () => useContext(AuthContext);
 
-export const useAuth = () => useContext(AuthContext)
+export const AuthProvider = ({ children }) => {
+  const [isAuth, setIsAuth] = useState(null);
+  const [user, setUser] = useState(null);
+  const [status, setStatus] = useState("checking"); // haya 3 tipos de estados, checking, authenticado y unauthenticated
 
-export const AuthProvider = ({children}) => {
+  useEffect(() => {
+    const cargarEstadoAuth = async () => {
+      const isAuthenticated = await AsyncStorage.getItem("isAuthenticated");
+      const userData = await AsyncStorage.getItem("userData");
 
-    const [isAuth, setIsAuth] = useState(null)
-    const [user, setUser] = useState(null)
-    const [status, setStatus] = useState('checking') // haya 3 tipos de estados, checking, authenticado y unauthenticated
+      if (isAuthenticated === "true" && userData) {
+        const compatible = await LocalAuthentication.hasHardwareAsync();
 
-    useEffect(() => {
-      
-        const cargarEstadoAuth = async() => {
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
 
-            const isAuthenticated = await AsyncStorage.getItem("isAuthenticated")
-            const userData = await AsyncStorage.getItem('userData')
+        if (compatible && enrolled) {
+          const results = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Verifica tu identidad",
+            fallbackLabel: "Usar contrasenia",
+            cancelLabel: "Cancelar",
+          });
 
-            if(isAuthenticated === 'true' && userData){
+          if (results.success) {
+            setUser(JSON.parse(userData));
+            setStatus("authenticated");
+            setIsAuth(true);
+          } else {
+            alert("Authenticacion cancelada o fallida");
+            await AsyncStorage.removeItem("isAuthenticated");
+            await AsyncStorage.removeItem("userData");
+            setStatus("unauthenticated");
+            setIsAuth(false);
+          }
+        } else {
+          console.log("Biometria no encontrada");
 
-                const compatible = await LocalAuthentication.hasHardwareAsync()
-
-                const enrolled = await LocalAuthentication.isEnrolledAsync();
-
-                if( compatible && enrolled){
-                    const results = await LocalAuthentication.authenticateAsync({
-                        promptMessage: 'Verifica tu identidad',
-                        fallbackLabel: "Usar contrasenia",
-                        cancelLabel: "Cancelar"
-                    })
-
-                    if(results.success){
-                        setUser(JSON.parse(userData))
-                        setStatus('authenticated');
-                        setIsAuth(true)
-                    }else{
-                        alert('Authenticacion cancelada o fallida')
-                        await AsyncStorage.removeItem("isAuthenticated")
-                        await AsyncStorage.removeItem("userData")
-                        setStatus('unauthenticated')
-                        setIsAuth(false)
-                    }
-                }else{
-                    console.log("Biometria no encontrada");
-                    
-                    setUser(JSON.parse(userData))
-                    setStatus('authenticated');
-                    setIsAuth(true)
-                }
-
-            }else{
-                setStatus('unauthenticated')
-                setIsAuth(false)
-            }
+          setUser(JSON.parse(userData));
+          setStatus("authenticated");
+          setIsAuth(true);
         }
- 
-        cargarEstadoAuth()
-    }, [])
-    
+      } else {
+        setStatus("unauthenticated");
+        setIsAuth(false);
+      }
+    };
 
+    cargarEstadoAuth();
+  }, []);
 
+  const login = async ({ usuario, password }) => {
+    try {
+      console.log("Iniciando Login");
 
-    const login = async ({usuario, password}) => {
-        try {
-            console.log('Iniciando Login');
-            
-            const response = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios');
-            const data = await response.json()
-            console.log('Data: ', data);
+      const response = await fetch(
+        "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios"
+      );
+      const data = await response.json();
+      console.log("Data: ", data);
 
-            console.log(`credenciasles: ${usuario} - ${password}`);
-            const user = data.find(u => u.username === usuario && u.password === password);
-            console.log("Usuario?: ", user);
-            
-            if(user){
-                await AsyncStorage.setItem('isAuthenticated', 'true')
-                await AsyncStorage.setItem('userData', JSON.stringify(user))
-                setUser(user)
-                setIsAuth(true)
-                setStatus('authenticated')
-            }else{
-                alert('Usuario o password incorrectos')
-                setStatus('unauthenticated')
-            }
-        } catch (error) {
-            console.error(error)
-            alert('Error en la authenticacion')
-            setStatus('unauthenticated')
-        }
+      console.log(`credenciasles: ${usuario} - ${password}`);
+      const user = data.find(
+        (u) => u.username === usuario && u.password === password
+      );
+      console.log("Usuario?: ", user);
+
+      if (user) {
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        await AsyncStorage.setItem("userData", JSON.stringify(user));
+        setUser(user);
+        setIsAuth(true);
+        setStatus("authenticated");
+      } else {
+        alert("Usuario o password incorrectos");
+        setStatus("unauthenticated");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error en la authenticacion");
+      setStatus("unauthenticated");
     }
+  };
 
+  const register = async ({ usuario, email, password }) => {
+    try {
+      const response = await fetch(
+        "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios"
+      );
+      const data = await response.json();
+      console.log(`usuario: ${usuario}`);
+      const userExist = data.some((u) => u.usuario === usuario);
+      const emailExist = data.some((u) => u.email === email);
 
-    const register = async ({usuario, email, password}) => {
-        try {
-            const response = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios');
-            const data = await response.json()
-            console.log(`usuario: ${usuario}`)
-            const userExist = data.some( u => u.usuario === usuario);
-            const emailExist = data.some( u => u.email === email);
-      
-            if(userExist){
-              alert('Usuario ya registrado')
-            }
-            else if(emailExist){
-              alert('Email ya registrado')
-            }
-            else{
-
+      if (userExist) {
+        alert("Usuario ya registrado");
+      } else if (emailExist) {
+        alert("Email ya registrado");
+      } else {
         const body = JSON.stringify({
-            email:email,
-            username:usuario,
-            password:password,
-            avatar:"",
-            name:""
-        })
+          email: email,
+          username: usuario,
+          password: password,
+          avatar: "",
+          name: "",
+        });
 
-        console.log(body)
+        console.log(body);
 
-        const respuesta = await fetch('https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios',{
-            method: 'POST',
-            headers:{
-                'Content-Type':'application/json',
+        const respuesta = await fetch(
+          "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-            body: body
-        })
+            body: body,
+          }
+        );
 
-        if(respuesta.ok){
-            alert('Registro Exitoso')
-        }else{
-            alert('Error al registrar el usuario')
+        if (respuesta.ok) {
+          alert("Registro Exitoso");
+        } else {
+          alert("Error al registrar el usuario");
         }
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error en la autenticacion");
     }
-} catch (error) {
-    console.error(error)
-    alert('Error en la autenticacion')
-  }
-}
+  };
+
+  const logout = () => setIsAuth(false);
+
+  const setFotoPerfil = async (uri) => {
+    if (user) {
+      try {
+        const body = JSON.stringify({
+          avatar: uri,
+        });
+
+        fetch(
+          `https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios/${user.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: body,
+          }
+        );
+        const updatedUser = { ...user, avatar: uri };
+        setUser(updatedUser);
+        await AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
+      } catch (error) {
+        console.error("Error al actualizar la foto de perfil:", error);
+      }
+    }
+  };
 
 
-
-    const logout = () => setIsAuth(false)
-
-    return (
-        <AuthContext.Provider value={{isAuth, login, logout, register, user}}>
-            {children}
-        </AuthContext.Provider>
-    )
-}
+  return (
+    <AuthContext.Provider
+      value={{ isAuth, login, logout, register, user, setFotoPerfil }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
