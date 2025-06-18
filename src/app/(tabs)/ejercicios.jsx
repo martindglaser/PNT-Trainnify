@@ -8,7 +8,6 @@ import { useRutina } from '../../context/routineContext';
 
 export default function Home() {
   const router = useRouter()
-  const { isAuth, user } = useAuth()
   const {rutina,setRutina} = useRutina();
   const {origenEjercicio ,setOrigenEjercicio } = useRutina()
   const [DATA, setDATA] = React.useState([])
@@ -27,7 +26,11 @@ useFocusEffect(
 
   )
 
-
+  useEffect(() => {
+    if(origenEjercicio === 'rutina'){
+      router.push(`/rutinas/${rutina.id}/edit`)
+    }
+  }, [rutina]);
 
   if (DATA.length === 0) {
     return (
@@ -67,8 +70,7 @@ useFocusEffect(
                     }
                     })
                   )
-                  console.log('rutina actualizada: ' + rutina)
-                  //router.push(`/rutinas/${rutina.id}/edit`)
+
                 }
               }
               }
