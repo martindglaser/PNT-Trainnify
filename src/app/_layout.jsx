@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import { AuthProvider, useAuth } from '../context/authContext'
 import { ProductProvider } from '../context/productContext'
 import { SedeProvider } from '../context/sedeContext'
+import { RutinaProvider } from '../context/routineContext'
 
 function ProtectedLayout() {
 
@@ -40,11 +41,13 @@ function ProtectedLayout() {
 export default function LayoutPrincipal(){
   return (
     <AuthProvider>
-      <ProductProvider>
-        <SedeProvider>
-          <ProtectedLayout/>  
-        </SedeProvider>
-      </ProductProvider>
+      <RutinaProvider>
+        <ProductProvider>
+          <SedeProvider>
+            <ProtectedLayout/>
+          </SedeProvider>
+        </ProductProvider>
+      </RutinaProvider>
     </AuthProvider>
   )
 }

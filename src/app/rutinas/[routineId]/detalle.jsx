@@ -1,15 +1,22 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Button, Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../../../context/authContext';
+import { useRutina } from '../../../context/routineContext';
 
 export default function DetalleRoutine() {
 
     const { routineId } = useLocalSearchParams()
+    const { user } = useAuth()
     const [rutina, setRutina] = useState(null)
     const [ejercicios, setEjercicios] = useState([])
 
+    const {setOrigenRutina} = useRutina()
+
 
     useEffect(() => {
+        
+        setOrigenRutina('rutina');
       fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine/${routineId}`)
       .then( res => res.json())
       .then(data => {
@@ -42,6 +49,8 @@ export default function DetalleRoutine() {
         )
     }
 
+    console.log(user.id)
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
        {/* <Image
@@ -62,10 +71,14 @@ export default function DetalleRoutine() {
                 );
         })
         }
+        
         <View style={styles.buttons}>
+            {
+            user.id == rutina.usuarioId &&
             <TouchableOpacity style={styles.cartButton} onPress={() => router.push(`/rutinas/${routineId}/edit`)}>
                 <Text style={styles.cartText}> Modificar </Text>
             </TouchableOpacity>
+            }
         </View>
     </ScrollView>
   )

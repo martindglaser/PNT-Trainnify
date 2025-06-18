@@ -23,6 +23,15 @@ export default function TabsLayout() {
                 ),
                 headerShown: false
             }}/>
+            <Tabs.Screen 
+            name="ejercicios" 
+            options={{
+                title: "Ejercicios",
+                tabBarIcon: ({ color, size}) => (
+                    <Ionicons name='barbell-outline' color={color} size={size} />
+                ),
+                headerShown: false
+            }}/>
     </Tabs>
   )
 }
