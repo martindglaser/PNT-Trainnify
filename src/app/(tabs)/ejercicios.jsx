@@ -8,7 +8,7 @@ import { useRutina } from '../../context/routineContext';
 
 export default function Home() {
   const router = useRouter()
-  const {rutina,setRutina} = useRutina();
+  const {rutina,setOrigenRutina ,setRutina} = useRutina();
   const {origenEjercicio ,setOrigenEjercicio } = useRutina()
   const [DATA, setDATA] = React.useState([])
 console.log(rutina)
@@ -26,11 +26,12 @@ useFocusEffect(
 
   )
 
-  useEffect(() => {
-    if(origenEjercicio === 'rutina'){
-      router.push(`/rutinas/${rutina.id}/edit`)
-    }
-  }, [rutina]);
+  // useEffect(() => {
+  //   if(origenEjercicio === 'rutina'){
+  //     // router.push(`/rutinas/${rutina.id}/edit`)
+  //     console.log(rutina)
+  //   }
+  // }, [rutina]);
 
   if (DATA.length === 0) {
     return (
@@ -64,13 +65,16 @@ useFocusEffect(
                     ...prev,
                     exercises: {
                       ...prev.exercises,
-                      exercisesIds: [...prev.exercises.exercisesIds, item.id],
+                      exercisesIds: [...prev.exercises.exercisesIds, parseInt(item.id)],
                       series: [...prev.exercises.series, 0],
                       reps: [...prev.exercises.reps, 0],
                     }
                     })
                   )
-
+                  setOrigenRutina("ejercicio")
+                  setTimeout(() => {
+                    router.push(`/rutinas/${rutina.id}/edit`)
+                  }, 500);
                 }
               }
               }
