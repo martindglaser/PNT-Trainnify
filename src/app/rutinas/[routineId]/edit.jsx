@@ -188,7 +188,8 @@ export default function DetalleRoutine() {
 
         
         <TouchableOpacity style={styles.saveButton} onPress={()=>{
-          router.push({ pathname: '/(tabs)/ejercicios', params: { from: 'rutina' } })
+          setOrigenEjercicio('rutina');
+          router.push({ pathname: '/(tabs)/ejercicios'})
         }}
         >
           <Text style={styles.saveButtonText}> + Agregar Ejercicio</Text>

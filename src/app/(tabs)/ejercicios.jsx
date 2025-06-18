@@ -1,35 +1,33 @@
-import { useRouter } from 'expo-router'
-import React, { use, useEffect, useState } from 'react'
+import { useFocusEffect, useRouter } from 'expo-router'
+import React, { useCallback, useEffect } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { useAuth } from '../../context/authContext'
 import { useLocalSearchParams } from 'expo-router';
+import { useRutina } from '../../context/routineContext';
 
 
 export default function Home() {
   const router = useRouter()
   const { isAuth, user } = useAuth()
-  const [origenEjercicio ,setOrigenEjercicio ] = useState()
+  const {rutina,setRutina} = useRutina();
+  const {origenEjercicio ,setOrigenEjercicio } = useRutina()
   const [DATA, setDATA] = React.useState([])
-  const params = useLocalSearchParams();
-
-
-    console.log('Params:', params);
-  useEffect(() => {
-    if (params.from === 'rutina') {
-      setOrigenEjercicio('rutina')
-    } else {
-      setOrigenEjercicio('ejercicio')
-    }
-    console.log('Origen del ejercicio:', origenEjercicio)
-  }, [])
-
-
-  useEffect(() => {
+console.log(rutina)
+useFocusEffect(
+    useCallback(() => {
       fetch('https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise')
-        .then(response => response.json())
-        .then(data => setDATA(data))
-        .catch(err => console.error(err))
-    }, []);
+      .then(response => response.json())
+      .then(data => setDATA(data))
+      .catch(err => console.error(err))
+      
+      return () => {
+        setOrigenEjercicio(null);
+      };
+    }, [])
+
+  )
+
+
 
   if (DATA.length === 0) {
     return (
@@ -53,7 +51,28 @@ export default function Home() {
                 styles.card,
                 pressed && { backgroundColor: '#e3f2fd' }
               ]}
-              onPress={() => router.push(`../ejercicios/${item.id}/detalle`)}
+              onPress={() => {
+                if(origenEjercicio === 'ejercicio'){
+                  router.push(`../ejercicios/${item.id}/detalle`)
+                }else if(origenEjercicio === 'rutina') {
+                  console.log('rutina sin actualizar: '+ rutina);
+                  setRutina(
+                    (prev)=> ({
+                    ...prev,
+                    exercises: {
+                      ...prev.exercises,
+                      exercisesIds: [...prev.exercises.exercisesIds, item.id],
+                      series: [...prev.exercises.series, 0],
+                      reps: [...prev.exercises.reps, 0],
+                    }
+                    })
+                  )
+                  console.log('rutina actualizada: ' + rutina)
+                  //router.push(`/rutinas/${rutina.id}/edit`)
+                }
+              }
+              }
+              
             >
               <Text style={styles.exerciseName}>{item.name}</Text>
               <Text style={styles.exerciseDesc} numberOfLines={2}>
