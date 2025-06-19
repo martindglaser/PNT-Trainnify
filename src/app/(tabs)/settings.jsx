@@ -42,7 +42,6 @@ export default function Settings() {
     const url = await uploadImageToCloudinary(uri);
     setFotoPerfil(url);
     setSubiendoFoto(false);
-    console.log('Imagen subida: ' + url);
   };
 
   if (subiendoFoto) {

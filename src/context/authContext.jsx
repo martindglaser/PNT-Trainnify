@@ -9,7 +9,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [isAuth, setIsAuth] = useState(null);
   const [user, setUser] = useState(null);
-  const [status, setStatus] = useState("checking"); // haya 3 tipos de estados, checking, authenticado y unauthenticated
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
     const cargarEstadoAuth = async () => {
@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
             setIsAuth(false);
           }
         } else {
-          console.log("Biometria no encontrada");
 
           setUser(JSON.parse(userData));
           setStatus("authenticated");
@@ -57,19 +56,15 @@ export const AuthProvider = ({ children }) => {
 
   const login = async ({ usuario, password }) => {
     try {
-      console.log("Iniciando Login");
 
       const response = await fetch(
         "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios"
       );
       const data = await response.json();
-      console.log("Data: ", data);
 
-      console.log(`credenciasles: ${usuario} - ${password}`);
       const user = data.find(
         (u) => u.username === usuario && u.password === password
       );
-      console.log("Usuario?: ", user);
 
       if (user) {
         await AsyncStorage.setItem("isAuthenticated", "true");
@@ -94,7 +89,6 @@ export const AuthProvider = ({ children }) => {
         "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios"
       );
       const data = await response.json();
-      console.log(`usuario: ${usuario}`);
       const userExist = data.some((u) => u.usuario === usuario);
       const emailExist = data.some((u) => u.email === email);
 
@@ -112,7 +106,6 @@ export const AuthProvider = ({ children }) => {
           admin: false,
         });
 
-        console.log(body);
 
         const respuesta = await fetch(
           "https://683f7cf35b39a8039a54c028.mockapi.io/api/v1/usuarios",

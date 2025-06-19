@@ -1,8 +1,6 @@
 import { Stack, useRouter, useSegments } from 'expo-router'
 import React, { useEffect } from 'react'
 import { AuthProvider, useAuth } from '../context/authContext'
-import { ProductProvider } from '../context/productContext'
-import { SedeProvider } from '../context/sedeContext'
 import { RutinaProvider } from '../context/routineContext'
 
 function ProtectedLayout() {
@@ -24,7 +22,6 @@ function ProtectedLayout() {
       router.replace('/(tabs)')
     }
 
-    console.log("segments: ", segments);
     
     
   }, [isAuth, segments])
@@ -42,11 +39,7 @@ export default function LayoutPrincipal(){
   return (
     <AuthProvider>
       <RutinaProvider>
-        <ProductProvider>
-          <SedeProvider>
-            <ProtectedLayout/>
-          </SedeProvider>
-        </ProductProvider>
+        <ProtectedLayout/>
       </RutinaProvider>
     </AuthProvider>
   )

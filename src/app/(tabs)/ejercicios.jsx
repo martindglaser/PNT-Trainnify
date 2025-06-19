@@ -39,7 +39,7 @@ export default function Home() {
         <Text style={styles.title}>Ejercicios</Text>
         <FlatList
           data={DATA}
-          contentContainerStyle={{ paddingBottom: 100 }} // Más padding para que no tape el botón
+          contentContainerStyle={{ paddingBottom: 100 }}
           keyExtractor={item => item.id.toString()}
           renderItem={({ item }) => (
             <Pressable
