@@ -1,37 +1,29 @@
 import { useFocusEffect, useRouter } from 'expo-router'
-import React, { useCallback, useEffect } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import React, { useCallback } from 'react'
+import { FlatList, Pressable, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
 import { useAuth } from '../../context/authContext'
 import { useLocalSearchParams } from 'expo-router';
 import { useRutina } from '../../context/routineContext';
 
-
 export default function Home() {
   const router = useRouter()
-  const {rutina,setOrigenRutina ,setRutina} = useRutina();
-  const {origenEjercicio ,setOrigenEjercicio } = useRutina()
+  const { rutina, setOrigenRutina, setRutina } = useRutina();
+  const { origenEjercicio, setOrigenEjercicio } = useRutina()
   const [DATA, setDATA] = React.useState([])
-console.log(rutina)
-useFocusEffect(
+  const { user } = useAuth()
+
+  useFocusEffect(
     useCallback(() => {
       fetch('https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise')
-      .then(response => response.json())
-      .then(data => setDATA(data))
-      .catch(err => console.error(err))
-      
+        .then(response => response.json())
+        .then(data => setDATA(data))
+        .catch(err => console.error(err))
+
       return () => {
-        setOrigenEjercicio(null);
+        setOrigenEjercicio('ejercicio');
       };
     }, [])
-
   )
-
-  // useEffect(() => {
-  //   if(origenEjercicio === 'rutina'){
-  //     // router.push(`/rutinas/${rutina.id}/edit`)
-  //     console.log(rutina)
-  //   }
-  // }, [rutina]);
 
   if (DATA.length === 0) {
     return (
@@ -47,7 +39,7 @@ useFocusEffect(
         <Text style={styles.title}>Ejercicios</Text>
         <FlatList
           data={DATA}
-          contentContainerStyle={{ paddingBottom: 30 }}
+          contentContainerStyle={{ paddingBottom: 100 }} // Más padding para que no tape el botón
           keyExtractor={item => item.id.toString()}
           renderItem={({ item }) => (
             <Pressable
@@ -56,29 +48,34 @@ useFocusEffect(
                 pressed && { backgroundColor: '#e3f2fd' }
               ]}
               onPress={() => {
-                if(origenEjercicio === 'ejercicio'){
+                if (origenEjercicio === 'ejercicio') {
                   router.push(`../ejercicios/${item.id}/detalle`)
-                }else if(origenEjercicio === 'rutina') {
-                  console.log('rutina sin actualizar: '+ rutina);
-                  setRutina(
-                    (prev)=> ({
-                    ...prev,
-                    exercises: {
-                      ...prev.exercises,
-                      exercisesIds: [...prev.exercises.exercisesIds, parseInt(item.id)],
-                      series: [...prev.exercises.series, 0],
-                      reps: [...prev.exercises.reps, 0],
-                    }
-                    })
-                  )
-                  setOrigenRutina("ejercicio")
-                  setTimeout(() => {
-                    router.push(`/rutinas/${rutina.id}/edit`)
-                  }, 500);
+                } else if (origenEjercicio === 'rutinaEdit' || origenEjercicio === 'rutinaCreate') {
+                  if (!rutina.exercises.exercisesIds.some(id => id === Number(item.id))) {
+                    setRutina(
+                      (prev) => ({
+                        ...prev,
+                        exercises: {
+                          ...prev.exercises,
+                          exercisesIds: [...prev.exercises.exercisesIds, parseInt(item.id)],
+                          series: [...prev.exercises.series, 0],
+                          reps: [...prev.exercises.reps, 0],
+                        }
+                      })
+                    )
+                    setOrigenRutina("ejercicio")
+                    setTimeout(() => {
+                      if (origenEjercicio === 'rutinaEdit') {
+                        router.push(`/rutinas/${rutina.id}/edit`)
+                      } else if (origenEjercicio === 'rutinaCreate') {
+                        router.push('/rutinas/create')
+                      }
+                    }, 500);
+                  } else {
+                    Alert.alert('El ejercicio ya está en la rutina');
+                  }
                 }
-              }
-              }
-              
+              }}
             >
               <Text style={styles.exerciseName}>{item.name}</Text>
               <Text style={styles.exerciseDesc} numberOfLines={2}>
@@ -97,18 +94,15 @@ useFocusEffect(
         />
       </View>
 
-
-      {
-        origenEjercicio !== 'rutina' && (
+      {origenEjercicio !== 'rutinaEdit' && origenEjercicio !== 'rutinaCreate' && user.admin && (
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push('../ejercicios/agregar')}
+          onPress={() => router.push('../ejercicios/create')}
           activeOpacity={0.85}
         >
           <Text style={styles.addButtonText}>＋ Agregar ejercicio</Text>
-        </TouchableOpacity>  
+        </TouchableOpacity>
       )}
-
     </View>
   )
 }

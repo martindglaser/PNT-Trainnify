@@ -109,6 +109,7 @@ export const AuthProvider = ({ children }) => {
           password: password,
           avatar: "",
           name: "",
+          admin: false,
         });
 
         console.log(body);

@@ -1,19 +1,31 @@
-import { useRouter } from 'expo-router'
-import React, { useEffect } from 'react'
+import { useFocusEffect, useRouter } from 'expo-router'
+import React, { useCallback, useEffect } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { useAuth } from '../../context/authContext'
+import { useRutina } from '../../context/routineContext'
 
 export default function Home() {
   const router = useRouter()
   const { isAuth, user } = useAuth()
   const [DATA, setDATA] = React.useState([])
+const { setOrigenRutina } = useRutina();
 
-  useEffect(() => {
-    fetch('https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine')
+useFocusEffect(
+    useCallback(() => {
+      obtenerRutinas();
+      setOrigenRutina('rutina')
+    }, [])
+
+  )
+
+
+  function obtenerRutinas(){
+      fetch('https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine')
       .then(response => response.json())
       .then(data => setDATA(data))
       .catch(err => console.error(err))
-  }, [])
+  }
+
 
   if (DATA.length === 0) {
     return (
@@ -40,9 +52,6 @@ export default function Home() {
               onPress={() => router.push(`../rutinas/${item.id}/detalle`)}
             >
               <Text style={styles.routineName}>{item.name}</Text>
-              <Text style={styles.routineDesc} numberOfLines={2}>
-                {item.description || 'Sin descripción'}
-              </Text>
             </Pressable>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
@@ -50,7 +59,7 @@ export default function Home() {
       </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => router.push('../rutinas/agregar')}
+        onPress={() => router.push('../rutinas/create')}
         activeOpacity={0.85}
       >
         <Text style={styles.addButtonText}>＋ Agregar rutina</Text>

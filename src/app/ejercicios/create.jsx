@@ -1,5 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,28 +9,27 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 
-export default function DetalleEjercicio() {
-  const { ejercicioId } = useLocalSearchParams();
-  const [ejercicio, setEjercicio] = useState(null);
-    const router = useRouter();
-
-  useEffect(() => {
-    fetch(
-      `https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise/${ejercicioId}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setEjercicio(data);
-      })
-      .catch((err) => console.error(err));
-  }, []);
+export default function CrearEjercicio() {
+  const router = useRouter();
+  const [ejercicio, setEjercicio] = useState({
+    name: "",
+    muscle_group: [""],
+    movement: "",
+  });
+  const [loading, setLoading] = useState(false);
 
   function guardar() {
+    if (!ejercicio.name.trim()) {
+      Alert.alert("Error", "El nombre del ejercicio es obligatorio");
+      return;
+    }
+    setLoading(true);
     fetch(
-      `https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise/${ejercicio.id}`,
+      `https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise`,
       {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -40,24 +38,26 @@ export default function DetalleEjercicio() {
     )
       .then((res) => res.json())
       .then((data) => {
+        setLoading(false);
         Alert.alert(
-          "✅ Ejercicio actualizado",
-          "Tu ejercicio fue actualizado con éxito"
+          "✅ Ejercicio creado",
+          "Tu ejercicio fue creado con éxito"
         );
         router.replace("/(tabs)/ejercicios");
       })
       .catch((err) => {
-        Alert.alert("Error", "Ocurrió un error al guardar el ejercicio");
+        setLoading(false);
+        Alert.alert("Error", "Ocurrió un error al crear el ejercicio");
         console.error(err);
       });
   }
 
-  if (!ejercicio) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={"#1976d2"} />
         <Text style={{ marginTop: 10, fontSize: 22, color: "#1976d2" }}>
-          Cargando Ejercicio...
+          Guardando ejercicio...
         </Text>
       </View>
     );
@@ -65,7 +65,7 @@ export default function DetalleEjercicio() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Editar ejercicio</Text>
+      <Text style={styles.title}>Crear ejercicio</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Nombre</Text>
@@ -108,6 +108,7 @@ export default function DetalleEjercicio() {
                     ),
                   }))
                 }
+                disabled={ejercicio.muscle_group.length === 1}
               >
                 <Text style={styles.deleteButtonText}>✕</Text>
               </TouchableOpacity>
@@ -139,7 +140,7 @@ export default function DetalleEjercicio() {
         />
 
         <TouchableOpacity style={styles.saveButton} onPress={guardar}>
-          <Text style={styles.saveButtonText}>Guardar</Text>
+          <Text style={styles.saveButtonText}>Crear</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

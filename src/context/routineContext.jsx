@@ -7,7 +7,7 @@ export const useRutina = () => useContext(RutinaContext);
 export const RutinaProvider = ({ children }) => {
   const [rutina, setRutina] = useState(null);
   const [origenRutina, setOrigenRutina] = useState('rutina');
-  const [origenEjercicio, setOrigenEjercicio] = useState(null);
+  const [origenEjercicio, setOrigenEjercicio] = useState('ejercicio');
 
   return (
     <RutinaContext.Provider

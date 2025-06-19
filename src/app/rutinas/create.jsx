@@ -1,37 +1,47 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
-import ListaDeChecks from '../../../components/ListaDeChecks';
-import { useRutina } from '../../../context/routineContext';
+import ListaDeChecks from '../../components/ListaDeChecks';
+import { useRutina } from '../../context/routineContext';
+import { useAuth } from '../../context/authContext';
 
-export default function DetalleRoutine() {
-  const router = useRouter()
-  const { routineId } = useLocalSearchParams();
-  const {rutina, setRutina,origenRutina,setOrigenEjercicio} = useRutina();
+export default function CrearRutina() {
+  const router = useRouter();
+  const { rutina, setRutina, setOrigenEjercicio, origenRutina } = useRutina();
   const [ejercicios, setEjercicios] = useState([]);
+  const [cargado, setCargado] = useState(false);
+  const {user} = useAuth();
 
   useEffect(() => {
-    if(origenRutina === 'rutina') {
-      fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine/${routineId}`)
-        .then(res => res.json())
-        .then(data => {
-          setRutina(data);
-          getEjercicios(data.exercises.exercisesIds);
-        })
-        .catch(err => console.error(err));
-    }else if(origenRutina === 'ejercicio') {
-      getEjercicios(rutina.exercises.exercisesIds);
+    if(origenRutina !== 'ejercicio'){
+        setRutina({
+        name: '',
+        usuarioId: Number(user.id),
+        description: '',
+        days: [],
+        rest_bt_series: 60,
+        rest_bt_exercises: 90,
+        creator_id: 1,
+        exercises: {
+        exercisesIds: [],
+        series: [],
+        reps: [],
+        },
+    })
+    }else{
+        getEjercicios(rutina.exercises.exercisesIds);
     }
+  setCargado(true);
   }, []);
+
 
   const getEjercicios = async (exercisesIds) => {
     fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise`)
@@ -44,8 +54,8 @@ export default function DetalleRoutine() {
   };
 
   function guardar() {
-    fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine/${rutina.id}`, {
-      method: 'PUT',
+    fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Routine`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -53,8 +63,9 @@ export default function DetalleRoutine() {
     })
       .then(res => res.json())
       .then(data => {
-        Alert.alert('✅ Rutina actualizada', 'Tu rutina fue actualizada con éxito');
-        router.replace('/(tabs)');
+        Alert.alert('✅ Rutina creada', 'Tu rutina fue creada con éxito');
+        setRutina(data);
+        router.replace(`/(tabs)`);
       })
       .catch(err => {
         Alert.alert('Error', 'Ocurrió un error al guardar la rutina');
@@ -62,26 +73,23 @@ export default function DetalleRoutine() {
       });
   }
 
-  if (!rutina) {
+if (!cargado) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={"#1976d2"} />
-        <Text style={{ marginTop: 10, fontSize: 22, color: "#1976d2" }}>
-          Cargando Rutina...
-        </Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>Cargando...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Editar rutina</Text>
+      <Text style={styles.title}>Crear nueva rutina</Text>
 
       <View style={styles.card}>
         <ListaDeChecks
           selectedDays={rutina.days}
           onChangeSeleccion={(nuevosDias) =>
-            setRutina(prev => ({
+            setRutina((prev) => ({
               ...prev,
               days: nuevosDias,
             }))
@@ -94,7 +102,7 @@ export default function DetalleRoutine() {
           placeholder="Nombre"
           value={rutina.name}
           onChangeText={(nuevoNombre) =>
-            setRutina(prev => ({
+            setRutina((prev) => ({
               ...prev,
               name: nuevoNombre,
             }))
@@ -108,14 +116,19 @@ export default function DetalleRoutine() {
           value={rutina.description}
           multiline
           onChangeText={(nuevoDesc) =>
-            setRutina(prev => ({
+            setRutina((prev) => ({
               ...prev,
               description: nuevoDesc,
             }))
           }
         />
 
-        <Text style={[styles.label, { marginTop: 18 }]}>Ejercicios</Text>
+
+
+
+
+
+ <Text style={[styles.label, { marginTop: 18 }]}>Ejercicios</Text>
         {ejercicios.map((exercise, index) => (
           <View key={index} style={styles.exerciseCard}>
             <Text style={styles.exerciseName}>{exercise.name}</Text>
@@ -196,7 +209,7 @@ export default function DetalleRoutine() {
 
         
         <TouchableOpacity style={styles.saveButton} onPress={()=>{
-          setOrigenEjercicio('rutinaEdit');
+          setOrigenEjercicio('rutinaCreate');
           router.push({ pathname: '/(tabs)/ejercicios'})
         }}
         >
@@ -204,7 +217,17 @@ export default function DetalleRoutine() {
           
         </TouchableOpacity>
 
-        <Text style={[styles.label, { marginTop: 18 }]}>Descanso entre ejercicios (segundos)</Text>
+
+
+
+
+
+
+
+
+
+
+        <Text style={styles.label}>Descanso entre ejercicios (segundos)</Text>
         <TextInput
           keyboardType="numeric"
           style={styles.input}
@@ -230,8 +253,11 @@ export default function DetalleRoutine() {
           }
         />
 
-        <TouchableOpacity style={styles.saveButton} onPress={guardar}>
-          <Text style={styles.saveButtonText}>💾 Guardar</Text>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={guardar}
+        >
+          <Text style={styles.saveButtonText}>💾 Crear rutina</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

@@ -1,21 +1,47 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Button, Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Text, ScrollView, View } from 'react-native';
+import { useAuth } from '../../../context/authContext';
 
 export default function DetalleExercise() {
 
     const { ejercicioId } = useLocalSearchParams()
     const [ejercicio, setEjercicio] = useState(null)
-
+    const { user } = useAuth();
 
     useEffect(() => {
       fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise/${ejercicioId}`)
       .then( res => res.json())
       .then(data => {
         setEjercicio(data)
-    })
+      })
       .catch(err => console.error(err))
     }, [])
+
+    const eliminarEjercicio = () => {
+      Alert.alert(
+        "¿Eliminar ejercicio?",
+        "¿Estás seguro de que deseas eliminar este ejercicio?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Eliminar",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await fetch(`https://683f7dae5b39a8039a54c1fa.mockapi.io/api/v1/Exercise/${ejercicioId}`, {
+                  method: 'DELETE'
+                });
+                Alert.alert("Ejercicio eliminado", "El ejercicio fue eliminado correctamente.");
+                router.replace('/(tabs)/ejercicios');
+              } catch (err) {
+                Alert.alert("Error", "No se pudo eliminar el ejercicio.");
+              }
+            }
+          }
+        ]
+      );
+    };
 
     if(!ejercicio){
         return (
@@ -26,34 +52,33 @@ export default function DetalleExercise() {
         )
     }
 
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{ejercicio.name}</Text>
+        <Text style={styles.description}>{ejercicio.description}</Text>
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-       {/* <Image
-        source={{uri: producto.image}}
-        style={styles.image}
-       /> */}
-       <Text style={styles.title}>{ejercicio.name}</Text>
-       <Text style={styles.description}>{ejercicio.description}</Text>
-
-            <View style={{marginBottom: 20, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 8}}>
-                <Text style={{fontWeight: 'bold'}}>Grupos musculares:</Text>
-                {
-                    ejercicio.muscle_group.map((group, index) => (
-                        <Text key={index}>     {group}</Text>
-                    ))
-                }
-                <Text style={{fontWeight: 'bold'}}>Movimiento:</Text>
-                <Text>     {ejercicio.movement}</Text>
-            </View>
-
+        <View style={{marginBottom: 20, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 8}}>
+            <Text style={{fontWeight: 'bold'}}>Grupos musculares:</Text>
+            {
+                ejercicio.muscle_group.map((group, index) => (
+                    <Text key={index}>     {group}</Text>
+                ))
+            }
+            <Text style={{fontWeight: 'bold'}}>Movimiento:</Text>
+            <Text>     {ejercicio.movement}</Text>
+        </View>
+        {user.admin && (
         <View style={styles.buttons}>
             <TouchableOpacity style={styles.cartButton} onPress={() => router.push(`/ejercicios/${ejercicioId}/edit`)}>
                 <Text style={styles.cartText}> Modificar </Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={eliminarEjercicio}>
+                <Text style={styles.deleteText}>Eliminar</Text>
+            </TouchableOpacity>
         </View>
-    </ScrollView>
-  )
+    )}
+      </ScrollView>
+    )
 }
 
 const styles = StyleSheet.create({
@@ -68,23 +93,11 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         alignItems:'center'
     },
-    image:{
-        width: 260,
-        height: 260,
-        resizeMode: 'contain',
-        marginBottom: 20
-    },
     title:{
         fontSize: 22,
         fontWeight: '600',
         color: '#222',
         textAlign: 'center',
-        marginBottom: 10,
-    },
-    price:{
-        fontSize: 20,
-        fontWeight: '700',
-        color: "#43a047",
         marginBottom: 10,
     },
     description:{
@@ -108,16 +121,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600'
     },
-    buyButton:{
+    deleteButton: {
         padding: 14,
         borderRadius: 12,
-        backgroundColor: '#007aff',
-        alignItems: 'center'
+        backgroundColor: '#ffcdd2',
+        alignItems: 'center',
+        marginTop: 10,
     },
-    buyText:{
-        color: '#fff',
+    deleteText: {
+        color: '#c62828',
         fontSize: 16,
-        fontWeight: '600'
+        fontWeight: 'bold'
     }
-  });
-  
+});
