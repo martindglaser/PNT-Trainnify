@@ -19,6 +19,16 @@ export default function DetalleRoutine() {
   const [ejercicios, setEjercicios] = useState([]);
   const { setOrigenRutina } = useRutina();
 
+  const diasRutina = [
+    'Domingo',
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+  ]
+
   useEffect(() => {
     setOrigenRutina('rutina');
 
@@ -66,6 +76,8 @@ export default function DetalleRoutine() {
     );
   };
 
+
+  
   if (!rutina) {
     return (
       <View style={styles.loadingContainer}>
@@ -81,7 +93,12 @@ export default function DetalleRoutine() {
       <Text style={styles.description}>{rutina.description}</Text>
 
       <Text style={styles.label}>Días de la semana:</Text>
-      <Text style={styles.text}>{rutina.days.join(', ')}</Text>
+      <Text style={styles.text}>{
+        rutina.days
+        .map((id) => diasRutina[id])
+        .filter(Boolean)
+        .join(', ')
+      }</Text>
 
       <Text style={styles.label}>Descanso entre ejercicios:</Text>
       <Text style={styles.text}>{rutina.rest_bt_exercises} segundos</Text>
